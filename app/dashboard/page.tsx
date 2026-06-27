@@ -5,7 +5,9 @@ export const metadata = {
   title: "Dashboard",
 };
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+
   const stats = getServiceStats();
 
   return (
@@ -15,7 +17,6 @@ export default function DashboardPage() {
       </h1>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-
         <StatsCard
           title="Послуг"
           value={stats.total}
@@ -33,7 +34,6 @@ export default function DashboardPage() {
           value={`${stats.avgPrice} грн`}
           color="blue"
         />
-
       </div>
 
       <div className="mt-10 bg-white rounded-xl shadow p-8">
