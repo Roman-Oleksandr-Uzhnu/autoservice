@@ -1,17 +1,72 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { services } from "@/lib/services";
 
 export default function ServicesPage() {
+  const [services, setServices] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  async function fetchServices() {
+    try {
+      setLoading(true);
+
+      const response = await fetch("/api/services");
+
+      if (!response.ok) {
+        throw new Error("Помилка завантаження");
+      }
+
+      const data = await response.json();
+      setServices(data);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    fetchServices();
+  }, []);
+
+  async function handleDelete(id: number) {
+    if (!confirm("Видалити послугу?")) return;
+
+    await fetch(`/api/services/${id}`, {
+      method: "DELETE",
+    });
+
+    fetchServices();
+  }
+
+  if (loading) {
+    return (
+      <div className="text-center py-10">
+        Завантаження...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-red-600 py-10">
+        {error}
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-4xl font-bold text-gray-900">
-          Послуги
+        <h1 className="text-4xl font-bold">
+          Послуги ({services.length})
         </h1>
 
         <Link
           href="/dashboard/services/new"
-          className="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition"
+          className="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700"
         >
           + Додати послугу
         </Link>
@@ -35,43 +90,36 @@ export default function ServicesPage() {
                 key={service.id}
                 className="border-t hover:bg-gray-50"
               >
-                <td className="px-6 py-4 flex items-center gap-3">
-                  <span className="text-2xl">
-                    {service.icon}
-                  </span>
-
-                  <span className="font-semibold text-gray-900">
-                    {service.name}
-                  </span>
+                <td className="px-6 py-4">
+                  {service.icon} {service.name}
                 </td>
 
-                <td className="px-6 py-4 text-gray-700">
+                <td className="px-6 py-4">
                   {service.category}
                 </td>
 
-                <td className="px-6 py-4 text-gray-700">
+                <td className="px-6 py-4">
                   {service.price} грн
                 </td>
 
                 <td className="px-6 py-4">
-                  {service.available ? (
-                    <span className="bg-green-100 text-green-700 px-2 py-1 rounded text-sm">
-                      Доступно
-                    </span>
-                  ) : (
-                    <span className="bg-red-100 text-red-700 px-2 py-1 rounded text-sm">
-                      Недоступно
-                    </span>
-                  )}
+                  {service.available ? "Доступно" : "Недоступно"}
                 </td>
 
-                <td className="px-6 py-4">
+                <td className="px-6 py-4 flex gap-4">
                   <Link
                     href={`/dashboard/services/${service.id}`}
-                    className="text-red-600 hover:underline font-medium"
+                    className="text-blue-600 hover:underline"
                   >
                     Переглянути
                   </Link>
+
+                  <button
+                    onClick={() => handleDelete(service.id)}
+                    className="text-red-600 hover:underline"
+                  >
+                    Видалити
+                  </button>
                 </td>
               </tr>
             ))}

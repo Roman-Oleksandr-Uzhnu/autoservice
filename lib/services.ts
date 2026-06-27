@@ -1,4 +1,4 @@
-export const services = [
+let services = [
   {
     id: 1,
     name: "Комп'ютерна діагностика",
@@ -73,10 +73,59 @@ export const services = [
   },
 ];
 
+let nextId = 9;
+
+export { services };
+
 export function getServiceById(id: number | string) {
   return services.find((service) => service.id === Number(id));
 }
 
 export function getCategories() {
   return ["Всі", ...new Set(services.map((service) => service.category))];
+}
+
+export function addService(data: any) {
+  const newService = {
+    id: nextId++,
+    name: data.name,
+    description: data.description || "",
+    price: Number(data.price),
+    icon: data.icon || "🔧",
+    category: data.category || "Інше",
+    available:
+      data.available !== undefined ? data.available : true,
+  };
+
+  services.push(newService);
+  return newService;
+}
+
+export function updateService(id: number | string, data: any) {
+  const index = services.findIndex(
+    (service) => service.id === Number(id)
+  );
+
+  if (index === -1) return null;
+
+  services[index] = {
+    ...services[index],
+    ...data,
+    id: services[index].id,
+  };
+
+  return services[index];
+}
+
+export function deleteService(id: number | string) {
+  const index = services.findIndex(
+    (service) => service.id === Number(id)
+  );
+
+  if (index === -1) return null;
+
+  const deleted = services[index];
+  services.splice(index, 1);
+
+  return deleted;
 }

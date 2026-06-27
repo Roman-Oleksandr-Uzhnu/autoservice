@@ -12,7 +12,12 @@ export default function NewServicePage() {
     category: "",
     price: "",
     description: "",
+    icon: "🔧",
+    available: true,
   });
+
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -23,12 +28,37 @@ export default function NewServicePage() {
     });
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    console.log(formData);
+    setSaving(true);
+    setError("");
 
-    router.push("/dashboard/services");
+    try {
+      const response = await fetch("/api/services", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...formData,
+          price: Number(formData.price),
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Помилка створення");
+      }
+
+      router.push("/dashboard/services");
+      router.refresh();
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -41,10 +71,15 @@ export default function NewServicePage() {
       </Link>
 
       <div className="bg-white rounded-xl shadow p-8">
-
         <h1 className="text-4xl font-bold mb-8 text-gray-900">
           Додати послугу
         </h1>
+
+        {error && (
+          <div className="bg-red-100 text-red-700 p-3 rounded mb-6">
+            {error}
+          </div>
+        )}
 
         <form
           onSubmit={handleSubmit}
@@ -112,9 +147,10 @@ export default function NewServicePage() {
           <div className="flex gap-4">
             <button
               type="submit"
-              className="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700"
+              disabled={saving}
+              className="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 disabled:opacity-50"
             >
-              Створити
+              {saving ? "Збереження..." : "Створити"}
             </button>
 
             <Link
@@ -125,7 +161,6 @@ export default function NewServicePage() {
             </Link>
           </div>
         </form>
-
       </div>
     </div>
   );

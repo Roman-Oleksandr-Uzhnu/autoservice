@@ -1,94 +1,124 @@
-import Link from "next/link";
-import { notFound } from "next/navigation";
-import { getServiceById } from "@/lib/services";
+'use client'
 
-type PageProps = {
-  params: Promise<{
-    id: string;
-  }>;
-};
+import { use, useEffect, useState } from 'react'
+import Link from 'next/link'
 
-export default async function ServiceDetailPage({
+export default function ServiceDetailPage({
   params,
-}: PageProps) {
-  const { id } = await params;
+}: {
+  params: Promise<{ id: string }>
+}) {
+  const { id } = use(params)
 
-  const service = getServiceById(id);
+  const [service, setService] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
-  if (!service) {
-    notFound();
+  useEffect(() => {
+    async function fetchService() {
+      try {
+        const response = await fetch(`/api/services/${id}`)
+
+        if (!response.ok) {
+          if (response.status === 404) {
+            throw new Error('Послугу не знайдено')
+          }
+          throw new Error('Помилка завантаження')
+        }
+
+        const data = await response.json()
+        setService(data)
+      } catch (err: any) {
+        setError(err.message)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchService()
+  }, [id])
+
+  if (loading) {
+    return (
+      <div className="flex justify-center py-12">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <h1 className="text-4xl font-bold text-gray-400 mb-4">404</h1>
+        <p className="mb-4">{error}</p>
+
+        <Link
+          href="/dashboard/services"
+          className="text-red-600 hover:underline"
+        >
+          ← До списку послуг
+        </Link>
+      </div>
+    )
   }
 
   return (
     <div>
       <Link
         href="/dashboard/services"
-        className="text-red-600 hover:underline mb-6 inline-block"
+        className="text-red-600 hover:underline"
       >
-        ← Назад до списку
+        ← Назад
       </Link>
 
-      <div className="bg-white rounded-xl shadow-lg p-8">
-        <div className="flex justify-between items-start mb-8">
-          <div className="flex items-center gap-4">
-            <span className="text-6xl">{service.icon}</span>
+      <div className="bg-white rounded-xl shadow p-8 mt-6">
+        <div className="flex items-center gap-4 mb-6">
+          <span className="text-5xl">{service.icon}</span>
 
-            <div>
-              <h1 className="text-4xl font-bold text-gray-900">
-                {service.name}
-              </h1>
+          <div>
+            <h1 className="text-3xl font-bold">
+              {service.name}
+            </h1>
 
-              <p className="text-gray-500">
-                {service.category}
-              </p>
-            </div>
-          </div>
-
-          <div className="bg-yellow-200 px-4 py-2 rounded">
-            TEST
+            <p className="text-gray-500">
+              {service.category}
+            </p>
           </div>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8">
+        <div className="grid md:grid-cols-2 gap-6 mb-8">
           <div>
-            <h3 className="font-bold text-gray-500 mb-2">
-              Ціна
-            </h3>
-
-            <p className="text-3xl font-bold text-red-600">
+            <p className="text-gray-500">Ціна</p>
+            <p className="text-2xl font-bold">
               {service.price} грн
             </p>
           </div>
 
           <div>
-            <h3 className="font-bold text-gray-500 mb-2">
-              Статус
-            </h3>
+            <p className="text-gray-500">Статус</p>
 
-            <p
-              className={
-                service.available
-                  ? "text-green-600 font-semibold"
-                  : "text-red-600 font-semibold"
-              }
-            >
-              {service.available
-                ? "Доступно"
-                : "Недоступно"}
-            </p>
+            {service.available ? (
+              <span className="text-green-600 font-semibold">
+                Доступно
+              </span>
+            ) : (
+              <span className="text-red-600 font-semibold">
+                Недоступно
+              </span>
+            )}
           </div>
         </div>
 
-        <div className="mt-8">
-          <h3 className="font-bold text-gray-500 mb-3">
+        <div>
+          <h2 className="font-bold text-xl mb-2">
             Опис
-          </h3>
+          </h2>
 
-          <p className="text-gray-700 leading-7">
+          <p className="text-gray-700">
             {service.description}
           </p>
         </div>
       </div>
     </div>
-  );
+  )
 }
