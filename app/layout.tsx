@@ -16,8 +16,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AutoService",
-  description: "Професійний автосервіс",
+  title: {
+    default: "AutoService",
+    template: "%s | AutoService",
+  },
+  description: "Професійний автосервіс України",
 };
 
 export default function RootLayout({
@@ -30,7 +33,7 @@ export default function RootLayout({
       lang="uk"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-screen flex flex-col bg-gray-100">
         <Header />
 
         <main className="flex-1">
