@@ -1,55 +1,58 @@
-'use client'
+"use client";
 
-import { use, useEffect, useState } from 'react'
-import Link from 'next/link'
+import { use, useEffect, useState } from "react";
+import Link from "next/link";
 
 export default function ServiceDetailPage({
   params,
 }: {
-  params: Promise<{ id: string }>
+  params: Promise<{ id: string }>;
 }) {
-  const { id } = use(params)
+  const { id } = use(params);
 
-  const [service, setService] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+  const [service, setService] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     async function fetchService() {
       try {
-        const response = await fetch(`/api/services/${id}`)
+        const response = await fetch(`/api/services/${id}`);
 
         if (!response.ok) {
           if (response.status === 404) {
-            throw new Error('Послугу не знайдено')
+            throw new Error("Послугу не знайдено");
           }
-          throw new Error('Помилка завантаження')
+          throw new Error("Помилка завантаження");
         }
 
-        const data = await response.json()
-        setService(data)
+        const data = await response.json();
+        setService(data);
       } catch (err: any) {
-        setError(err.message)
+        setError(err.message);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     }
 
-    fetchService()
-  }, [id])
+    fetchService();
+  }, [id]);
 
   if (loading) {
     return (
       <div className="flex justify-center py-12">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
       </div>
-    )
+    );
   }
 
   if (error) {
     return (
       <div className="text-center py-12">
-        <h1 className="text-4xl font-bold text-gray-400 mb-4">404</h1>
+        <h1 className="text-4xl font-bold text-gray-400 mb-4">
+          404
+        </h1>
+
         <p className="mb-4">{error}</p>
 
         <Link
@@ -59,7 +62,7 @@ export default function ServiceDetailPage({
           ← До списку послуг
         </Link>
       </div>
-    )
+    );
   }
 
   return (
@@ -72,23 +75,33 @@ export default function ServiceDetailPage({
       </Link>
 
       <div className="bg-white rounded-xl shadow p-8 mt-6">
-        <div className="flex items-center gap-4 mb-6">
-          <span className="text-5xl">{service.icon}</span>
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-4">
+            <span className="text-5xl">{service.icon}</span>
 
-          <div>
-            <h1 className="text-3xl font-bold">
-              {service.name}
-            </h1>
+            <div>
+              <h1 className="text-3xl font-bold">
+                {service.name}
+              </h1>
 
-            <p className="text-gray-500">
-              {service.category}
-            </p>
+              <p className="text-gray-500">
+                {service.category}
+              </p>
+            </div>
           </div>
+
+          <Link
+            href={`/dashboard/services/${service._id}/edit`}
+            className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700"
+          >
+            Редагувати
+          </Link>
         </div>
 
         <div className="grid md:grid-cols-2 gap-6 mb-8">
           <div>
             <p className="text-gray-500">Ціна</p>
+
             <p className="text-2xl font-bold">
               {service.price} грн
             </p>
@@ -120,5 +133,5 @@ export default function ServiceDetailPage({
         </div>
       </div>
     </div>
-  )
+  );
 }

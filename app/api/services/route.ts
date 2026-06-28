@@ -1,71 +1,73 @@
-import { NextResponse } from "next/server";
-import { services, addService } from "@/lib/services";
+import { NextRequest, NextResponse } from "next/server";
+import dbConnect from "@/lib/db";
+import Service from "@/lib/models/Service";
 
 // GET /api/services
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
+  await dbConnect();
+
   const { searchParams } = new URL(request.url);
 
   const category = searchParams.get("category");
   const search = searchParams.get("search");
 
-  let result = [...services];
+  const filter: any = {};
 
-  // Фільтр за категорією
-  if (category && category !== "Всі") {
-    result = result.filter(
-      (service) => service.category === category
-    );
+  if (category) {
+    filter.category = category;
   }
 
-  // Пошук за назвою
   if (search) {
-    result = result.filter((service) =>
-      service.name.toLowerCase().includes(search.toLowerCase())
-    );
+    filter.name = {
+      $regex: search,
+      $options: "i",
+    };
   }
 
-  return NextResponse.json(result);
+  const services = await Service.find(filter).sort({
+    createdAt: -1,
+  });
+
+  return NextResponse.json({
+    count: services.length,
+    services,
+  });
 }
 
 // POST /api/services
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  await dbConnect();
+
   try {
     const body = await request.json();
 
-    if (!body.name || !body.category || !body.price) {
-      return NextResponse.json(
-        {
-          error: "Поля name, category та price є обов'язковими",
-        },
-        {
-          status: 400,
-        }
-      );
-    }
+    const service = await Service.create(body);
 
-    if (Number(body.price) <= 0) {
-      return NextResponse.json(
-        {
-          error: "Ціна має бути більшою за 0",
-        },
-        {
-          status: 400,
-        }
-      );
-    }
-
-    const newService = addService(body);
-
-    return NextResponse.json(newService, {
+    return NextResponse.json(service, {
       status: 201,
     });
-  } catch {
+  } catch (error: any) {
+    if (error.name === "ValidationError") {
+      const errors = Object.values(error.errors).map(
+        (err: any) => err.message
+      );
+
+      return NextResponse.json(
+        {
+          errors,
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
     return NextResponse.json(
       {
-        error: "Невалідний JSON",
+        error: "Помилка сервера",
       },
       {
-        status: 400,
+        status: 500,
       }
     );
   }

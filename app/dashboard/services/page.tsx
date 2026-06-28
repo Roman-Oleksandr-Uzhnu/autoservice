@@ -19,7 +19,7 @@ export default function ServicesPage() {
       }
 
       const data = await response.json();
-      setServices(data);
+setServices(data.services);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -87,7 +87,7 @@ export default function ServicesPage() {
           <tbody>
             {services.map((service) => (
               <tr
-                key={service.id}
+                key={service._id}
                 className="border-t hover:bg-gray-50"
               >
                 <td className="px-6 py-4">
@@ -108,14 +108,14 @@ export default function ServicesPage() {
 
                 <td className="px-6 py-4 flex gap-4">
                   <Link
-                    href={`/dashboard/services/${service.id}`}
+                    href={`/dashboard/services/${service._id}`}
                     className="text-blue-600 hover:underline"
                   >
                     Переглянути
                   </Link>
 
                   <button
-                    onClick={() => handleDelete(service.id)}
+                    onClick={() => handleDelete(service._id)}
                     className="text-red-600 hover:underline"
                   >
                     Видалити

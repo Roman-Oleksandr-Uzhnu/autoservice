@@ -8,7 +8,7 @@ export const metadata = {
 export default async function DashboardPage() {
   await new Promise((resolve) => setTimeout(resolve, 1000));
 
-  const stats = getServiceStats();
+  const stats = await getServiceStats();
 
   return (
     <div>

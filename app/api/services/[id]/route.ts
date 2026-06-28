@@ -1,84 +1,105 @@
-import { NextResponse } from "next/server";
-import {
-  getServiceById,
-  updateService,
-  deleteService,
-} from "@/lib/services";
+import { NextRequest, NextResponse } from "next/server";
+import dbConnect from "@/lib/db";
+import Service from "@/lib/models/Service";
 
 // GET /api/services/[id]
 export async function GET(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;
+  await dbConnect();
 
-  const service = getServiceById(id);
-
-  if (!service) {
-    return NextResponse.json(
-      { error: "Послугу не знайдено" },
-      { status: 404 }
-    );
-  }
-
-  return NextResponse.json(service);
-}
-
-// PUT /api/services/[id]
-export async function PUT(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
   const { id } = await params;
 
   try {
-    const body = await request.json();
+    const service = await Service.findById(id);
 
-    if (!body.name || !body.category || !body.price) {
-      return NextResponse.json(
-        {
-          error: "Поля name, category та price є обов'язковими",
-        },
-        { status: 400 }
-      );
-    }
-
-    const updated = updateService(id, body);
-
-    if (!updated) {
+    if (!service) {
       return NextResponse.json(
         { error: "Послугу не знайдено" },
         { status: 404 }
       );
     }
 
-    return NextResponse.json(updated);
+    return NextResponse.json(service);
   } catch {
     return NextResponse.json(
-      { error: "Невалідний JSON" },
+      { error: "Невалідний ID" },
       { status: 400 }
+    );
+  }
+}
+
+// PUT /api/services/[id]
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  await dbConnect();
+
+  const { id } = await params;
+
+  try {
+    const body = await request.json();
+
+    const service = await Service.findByIdAndUpdate(id, body, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!service) {
+      return NextResponse.json(
+        { error: "Послугу не знайдено" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(service);
+  } catch (error: any) {
+    if (error.name === "ValidationError") {
+      const errors = Object.values(error.errors).map(
+        (err: any) => err.message
+      );
+
+      return NextResponse.json(
+        { errors },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json(
+      { error: "Помилка сервера" },
+      { status: 500 }
     );
   }
 }
 
 // DELETE /api/services/[id]
 export async function DELETE(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  await dbConnect();
+
   const { id } = await params;
 
-  const deleted = deleteService(id);
+  try {
+    const service = await Service.findByIdAndDelete(id);
 
-  if (!deleted) {
+    if (!service) {
+      return NextResponse.json(
+        { error: "Послугу не знайдено" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({
+      message: `Послугу "${service.name}" видалено`,
+    });
+  } catch {
     return NextResponse.json(
-      { error: "Послугу не знайдено" },
-      { status: 404 }
+      { error: "Невалідний ID" },
+      { status: 400 }
     );
   }
-
-  return NextResponse.json({
-    message: `Послугу "${deleted.name}" видалено`,
-    deleted,
-  });
 }
