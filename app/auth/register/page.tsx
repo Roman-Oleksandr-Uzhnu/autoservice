@@ -14,31 +14,36 @@ export default function RegisterPage() {
 
   const [loading, setLoading] = useState(false);
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     setLoading(true);
 
-    const res = await fetch("/api/auth/register", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(form),
-    });
+    try {
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(form),
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    setLoading(false);
+      if (!res.ok) {
+        alert(data.error || data.errors?.join(", ") || "Помилка");
+        return;
+      }
 
-    if (!res.ok) {
-      alert(data.error);
-      return;
+      alert("Реєстрація успішна!");
+
+      router.push("/auth/login");
+    } catch (error) {
+      console.error(error);
+      alert("Помилка з'єднання із сервером");
+    } finally {
+      setLoading(false);
     }
-
-    alert("Реєстрація успішна!");
-
-    router.push("/auth/login");
   }
 
   return (
@@ -49,6 +54,9 @@ export default function RegisterPage() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
+          type="text"
+          name="name"
+          required
           className="w-full border p-3 rounded"
           placeholder="Ім'я"
           value={form.name}
@@ -58,8 +66,10 @@ export default function RegisterPage() {
         />
 
         <input
-          className="w-full border p-3 rounded"
           type="email"
+          name="email"
+          required
+          className="w-full border p-3 rounded"
           placeholder="Email"
           value={form.email}
           onChange={(e) =>
@@ -68,8 +78,10 @@ export default function RegisterPage() {
         />
 
         <input
-          className="w-full border p-3 rounded"
           type="password"
+          name="password"
+          required
+          className="w-full border p-3 rounded"
           placeholder="Пароль"
           value={form.password}
           onChange={(e) =>
@@ -78,8 +90,9 @@ export default function RegisterPage() {
         />
 
         <button
-          className="w-full bg-red-600 text-white py-3 rounded"
+          type="submit"
           disabled={loading}
+          className="w-full bg-red-600 text-white py-3 rounded"
         >
           {loading ? "Зачекайте..." : "Зареєструватися"}
         </button>

@@ -2,36 +2,46 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import dbConnect from "@/lib/db";
 import User from "@/lib/models/User";
+import { registerSchema } from "@/lib/validations/user";
 
 export async function POST(request: Request) {
   try {
     await dbConnect();
 
-    const { name, email, password } = await request.json();
+    const data = await request.json();
 
-    console.log("BODY:", { name, email, password });
+    // Валідація через Zod
+    const result = registerSchema.safeParse(data);
 
-    if (!name || !email || !password) {
+    if (!result.success) {
+      const messages = result.error.issues.map((e) => e.message);
+
       return NextResponse.json(
-        { error: "Заповніть усі поля" },
-        { status: 400 }
+        {
+          error: messages.join(", "),
+        },
+        {
+          status: 400,
+        }
       );
     }
 
-    const existingUser = await User.findOne({ email });
+    const { name, email, password } = result.data;
 
-    console.log("EXISTING USER:", existingUser);
+    const existingUser = await User.findOne({ email });
 
     if (existingUser) {
       return NextResponse.json(
-        { error: "Користувач уже існує" },
-        { status: 400 }
+        {
+          error: "Користувач з таким email вже існує",
+        },
+        {
+          status: 409,
+        }
       );
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    console.log("HASH CREATED");
 
     const user = await User.create({
       name,
@@ -40,23 +50,37 @@ export async function POST(request: Request) {
       role: "user",
     });
 
-    console.log("USER CREATED:", user);
-
     return NextResponse.json(
       {
-        message: "Користувача створено",
+        message: "Користувача успішно створено",
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+        },
       },
       {
         status: 201,
       }
     );
-  } catch (error) {
-    console.error("REGISTER ERROR:");
+  } catch (error: any) {
+    if (error.code === 11000) {
+      return NextResponse.json(
+        {
+          error: "Користувач з таким email вже існує",
+        },
+        {
+          status: 409,
+        }
+      );
+    }
+
     console.error(error);
 
     return NextResponse.json(
       {
-        error: String(error),
+        error: "Помилка сервера",
       },
       {
         status: 500,
