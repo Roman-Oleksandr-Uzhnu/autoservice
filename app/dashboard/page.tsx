@@ -1,11 +1,21 @@
 import StatsCard from "@/components/StatsCard";
 import { getServiceStats } from "@/lib/helpers";
 
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { redirect } from "next/navigation";
+
 export const metadata = {
   title: "Dashboard",
 };
 
 export default async function DashboardPage() {
+  const session = await getServerSession(authOptions);
+
+  if (!session) {
+    redirect("/auth/login");
+  }
+
   await new Promise((resolve) => setTimeout(resolve, 1000));
 
   const stats = getServiceStats();
@@ -15,6 +25,10 @@ export default async function DashboardPage() {
       <h1 className="text-4xl font-bold mb-8 text-gray-900">
         Огляд
       </h1>
+
+      <p className="mb-6 text-gray-600">
+        Вітаємо, <strong>{session.user?.name}</strong>!
+      </p>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <StatsCard

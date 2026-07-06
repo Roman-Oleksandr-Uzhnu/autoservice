@@ -31,7 +31,7 @@ export default function ServicesPage() {
     fetchServices();
   }, []);
 
-  async function handleDelete(id: number) {
+  async function handleDelete(id: string) {
     if (!confirm("Видалити послугу?")) return;
 
     await fetch(`/api/services/${id}`, {
@@ -58,7 +58,7 @@ export default function ServicesPage() {
   }
 
   return (
-    <div>
+    <div className="text-gray-900">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-4xl font-bold">
           Послуги ({services.length})
@@ -87,7 +87,7 @@ export default function ServicesPage() {
           <tbody>
             {services.map((service) => (
               <tr
-                key={service.id}
+                key={service._id}
                 className="border-t hover:bg-gray-50"
               >
                 <td className="px-6 py-4">
@@ -103,19 +103,34 @@ export default function ServicesPage() {
                 </td>
 
                 <td className="px-6 py-4">
-                  {service.available ? "Доступно" : "Недоступно"}
+                  {service.available ? (
+                    <span className="text-green-600 font-semibold">
+                      Доступно
+                    </span>
+                  ) : (
+                    <span className="text-red-600 font-semibold">
+                      Недоступно
+                    </span>
+                  )}
                 </td>
 
                 <td className="px-6 py-4 flex gap-4">
                   <Link
-                    href={`/dashboard/services/${service.id}`}
+                    href={`/dashboard/services/${service._id}`}
                     className="text-blue-600 hover:underline"
                   >
                     Переглянути
                   </Link>
 
+                  <Link
+                    href={`/dashboard/services/${service._id}/edit`}
+                    className="text-yellow-600 hover:underline"
+                  >
+                    Редагувати
+                  </Link>
+
                   <button
-                    onClick={() => handleDelete(service.id)}
+                    onClick={() => handleDelete(service._id)}
                     className="text-red-600 hover:underline"
                   >
                     Видалити

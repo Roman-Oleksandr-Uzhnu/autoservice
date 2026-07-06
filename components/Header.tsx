@@ -1,57 +1,67 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-
-const navLinks = [
-  { href: "/", label: "Головна" },
-  { href: "/menu", label: "Послуги" },
-  { href: "/about", label: "Про нас" },
-  { href: "/contact", label: "Контакти" },
-];
+import { useSession, signOut } from "next-auth/react";
 
 export default function Header() {
-  const pathname = usePathname();
+  const { data: session } = useSession();
 
   return (
-    <header className="bg-slate-900 text-white py-5 shadow-lg">
-      <div className="container mx-auto px-6 flex justify-between items-center">
-
+    <header className="bg-gray-900 text-white shadow">
+      <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-4">
         <Link
           href="/"
-          className="text-3xl font-bold text-red-500"
+          className="text-2xl font-bold"
         >
           AutoService
         </Link>
 
-        <nav>
-          <ul className="flex gap-8">
+        <nav className="flex items-center gap-6">
+          <Link href="/">Головна</Link>
+          <Link href="/menu">Послуги</Link>
+          <Link href="/dashboard">Dashboard</Link>
 
-            {navLinks.map((link) => {
-              const isActive =
-                link.href === "/"
-                  ? pathname === "/"
-                  : pathname.startsWith(link.href);
+          {session ? (
+            <div className="flex items-center gap-3 border-l border-gray-600 pl-4">
+              <span>{session.user?.name}</span>
 
-              return (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className={`transition font-medium ${
-                      isActive
-                        ? "text-red-500"
-                        : "hover:text-red-400"
-                    }`}
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              );
-            })}
+              <span
+                className={`px-2 py-1 rounded text-xs ${
+                  session.user.role === "admin"
+                    ? "bg-red-600 text-white"
+                    : "bg-green-600 text-white"
+                }`}
+              >
+                {session.user.role}
+              </span>
 
-          </ul>
+              <button
+                onClick={() =>
+                  signOut({ callbackUrl: "/" })
+                }
+                className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded"
+              >
+                Вийти
+              </button>
+            </div>
+          ) : (
+            <div className="flex gap-3">
+              <Link
+                href="/auth/login"
+                className="hover:text-gray-300"
+              >
+                Увійти
+              </Link>
+
+              <Link
+                href="/auth/register"
+                className="bg-blue-600 px-3 py-1 rounded hover:bg-blue-700"
+              >
+                Реєстрація
+              </Link>
+            </div>
+          )}
         </nav>
-
       </div>
     </header>
   );

@@ -1,72 +1,45 @@
 import { NextResponse } from "next/server";
-import { services, addService } from "@/lib/services";
+import dbConnect from "@/lib/db";
+import Service from "@/lib/models/Service";
+import { authorize } from "@/lib/authorize";
 
-// GET /api/services
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
+// GET /api/services (публічний)
+export async function GET() {
+  try {
+    await dbConnect();
 
-  const category = searchParams.get("category");
-  const search = searchParams.get("search");
+    const services = await Service.find().sort({
+      createdAt: -1,
+    });
 
-  let result = [...services];
-
-  // Фільтр за категорією
-  if (category && category !== "Всі") {
-    result = result.filter(
-      (service) => service.category === category
+    return NextResponse.json(services);
+  } catch {
+    return NextResponse.json(
+      { error: "Помилка сервера" },
+      { status: 500 }
     );
   }
-
-  // Пошук за назвою
-  if (search) {
-    result = result.filter((service) =>
-      service.name.toLowerCase().includes(search.toLowerCase())
-    );
-  }
-
-  return NextResponse.json(result);
 }
 
-// POST /api/services
+// POST /api/services (тільки admin)
 export async function POST(request: Request) {
+  const { error } = await authorize("admin");
+  if (error) return error;
+
   try {
+    await dbConnect();
+
     const body = await request.json();
 
-    if (!body.name || !body.category || !body.price) {
-      return NextResponse.json(
-        {
-          error: "Поля name, category та price є обов'язковими",
-        },
-        {
-          status: 400,
-        }
-      );
-    }
+    const service = await Service.create(body);
 
-    if (Number(body.price) <= 0) {
-      return NextResponse.json(
-        {
-          error: "Ціна має бути більшою за 0",
-        },
-        {
-          status: 400,
-        }
-      );
-    }
-
-    const newService = addService(body);
-
-    return NextResponse.json(newService, {
+    return NextResponse.json(service, {
       status: 201,
     });
   } catch {
     return NextResponse.json(
-      {
-        error: "Невалідний JSON",
-      },
-      {
-        status: 400,
-      }
+      { error: "Помилка створення послуги" },
+      { status: 400 }
     );
   }
 }
