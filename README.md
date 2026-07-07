@@ -1,36 +1,93 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AutoService
 
-## Getting Started
+Сучасний full-stack вебзастосунок для керування автосервісом, створений на Next.js. Проєкт дозволяє переглядати послуги, оформлювати замовлення, керувати клієнтами та адміністративною панеллю.
 
-First, run the development server:
+> **Демо:** буде додано після деплою на Vercel.
+
+---
+
+# Скріншоти
+
+*Головна сторінка*
+
+*Панель адміністратора*
+
+*Форма створення послуги*
+
+*Сторінка замовлень*
+
+---
+
+## Можливості
+
+- 🔐 Реєстрація та авторизація користувачів (NextAuth)
+- 👥 Ролі користувачів (Admin/User)
+- 🚗 CRUD для послуг автосервісу
+- 📦 CRUD для замовлень
+- 👤 Керування користувачами
+- ✅ React Hook Form + Zod
+- 🔔 Sonner Toast повідомлення
+- 🛡️ Захист API та серверна валідація
+- 🖼️ Оптимізовані зображення через Next.js Image
+- 🌍 SEO Metadata
+- 🤖 robots.txt та sitemap.xml
+- 🚀 Production Ready
+
+---
+
+## Технології
+
+- Next.js 15 (App Router)
+- React
+- TypeScript
+- Tailwind CSS
+- MongoDB Atlas
+- Mongoose
+- NextAuth.js
+- React Hook Form
+- Zod
+- Sonner
+
+---
+
+## Локальний запуск
 
 ```bash
+git clone https://github.com/Roman-Oleksandr-Uzhnu/autoservice.git
+
+cd autoservice
+
+npm install
+
+cp .env.local.example .env.local
+
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Environment Variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Змінна | Опис |
+|---------|------|
+| MONGODB_URI | MongoDB Atlas URI |
+| NEXTAUTH_SECRET | Secret для NextAuth |
+| NEXTAUTH_URL | URL застосунку |
+| NEXT_PUBLIC_SITE_URL | Публічний URL |
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## Деплой
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Проєкт готовий до деплою на **Vercel**.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Після імпорту репозиторію необхідно додати всі змінні середовища та виконати Deploy.
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Автор
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Студент спеціальності **Кібербезпека та захист інформації**
+Роман Олександр
+
+Ужгородський національний університет
