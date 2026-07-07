@@ -2,17 +2,14 @@ import { z } from "zod";
 
 export const loginSchema = z.object({
   email: z
-    .string({
-      required_error: "Email обов'язковий",
-    })
+    .string()
+    .min(1, "Email обов'язковий")
     .email("Некоректний email")
     .toLowerCase()
     .trim(),
 
   password: z
-    .string({
-      required_error: "Пароль обов'язковий",
-    })
+    .string()
     .min(1, "Пароль обов'язковий"),
 });
 
@@ -26,6 +23,7 @@ export const registerFormSchema = z
 
     email: z
       .string()
+      .min(1, "Email обов'язковий")
       .email("Некоректний email")
       .toLowerCase()
       .trim(),
@@ -39,10 +37,7 @@ export const registerFormSchema = z
       .string()
       .min(6, "Мінімум 6 символів"),
   })
-  .refine(
-    (data) => data.password === data.confirmPassword,
-    {
-      message: "Паролі не збігаються",
-      path: ["confirmPassword"],
-    }
-  );
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Паролі не збігаються",
+    path: ["confirmPassword"],
+  });
