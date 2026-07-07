@@ -3,7 +3,7 @@
 import { useFavorites } from "@/contexts/FavoritesContext";
 
 type Props = {
-  serviceId: number;
+  serviceId: string;
 };
 
 export default function FavoriteButton({ serviceId }: Props) {

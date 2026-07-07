@@ -1,8 +1,11 @@
+"use client";
+
 import Link from "next/link";
 import FavoriteButton from "./FavoriteButton";
+import { useCart } from "@/lib/context/CartContext";
 
 type ServiceCardProps = {
-  id: number;
+  id: string | number;
   name: string;
   description: string;
   price: number;
@@ -20,6 +23,19 @@ export default function ServiceCard({
   category,
   available = true,
 }: ServiceCardProps) {
+  const { addItem } = useCart();
+
+  function handleAddToCart() {
+    addItem({
+      service: String(id),
+      name,
+      price,
+      quantity: 1,
+    });
+
+    alert("Послугу додано до кошика!");
+  }
+
   return (
     <div
       className={`bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition duration-300 ${
@@ -37,7 +53,7 @@ export default function ServiceCard({
           </h3>
 
           <div className="flex items-center gap-2">
-            <FavoriteButton serviceId={id} />
+            <FavoriteButton serviceId={String(id)} />
 
             {available ? (
               <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded">
@@ -55,23 +71,31 @@ export default function ServiceCard({
           {description}
         </p>
 
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center mb-4">
           <span className="text-red-600 font-bold text-lg">
             {price} грн
           </span>
 
-          <div className="flex items-center gap-2">
-            <span className="bg-gray-100 text-gray-500 text-xs px-2 py-1 rounded">
-              {category}
-            </span>
+          <span className="bg-gray-100 text-gray-500 text-xs px-2 py-1 rounded">
+            {category}
+          </span>
+        </div>
 
-            <Link
-              href={`/menu/${id}`}
-              className="text-red-600 hover:text-red-800 text-sm font-semibold"
-            >
-              Детальніше →
-            </Link>
-          </div>
+        <div className="flex gap-2">
+          <button
+            onClick={handleAddToCart}
+            disabled={!available}
+            className="flex-1 bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white py-2 rounded-lg transition"
+          >
+            Додати в кошик
+          </button>
+
+          <Link
+            href={`/menu/${id}`}
+            className="px-4 py-2 border border-red-600 text-red-600 rounded-lg hover:bg-red-50 transition"
+          >
+            Детальніше
+          </Link>
         </div>
       </div>
     </div>

@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getServiceById } from "@/lib/services";
+import mongoose from "mongoose";
+import dbConnect from "@/lib/db";
+import Service from "@/lib/models/Service";
 
 type PageProps = {
   params: Promise<{
@@ -8,10 +10,18 @@ type PageProps = {
   }>;
 };
 
+type ServiceDetails = {
+  name: string;
+  description: string;
+  price: number;
+  icon: string;
+  category: string;
+  available: boolean;
+};
+
 export async function generateMetadata({ params }: PageProps) {
   const { id } = await params;
-
-  const service = getServiceById(id);
+  const service = await getService(id);
 
   if (!service) {
     return {
@@ -30,7 +40,7 @@ export default async function ServicePage({
 }: PageProps) {
   const { id } = await params;
 
-  const service = getServiceById(id);
+  const service = await getService(id);
 
   if (!service) {
     notFound();
@@ -122,4 +132,11 @@ export default async function ServicePage({
       </section>
     </div>
   );
+}
+
+async function getService(id: string) {
+  if (!mongoose.Types.ObjectId.isValid(id)) return null;
+
+  await dbConnect();
+  return Service.findById(id).lean().exec() as Promise<ServiceDetails | null>;
 }

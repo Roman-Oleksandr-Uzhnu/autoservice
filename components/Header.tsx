@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
+import { useCart } from "@/lib/context/CartContext";
 
 export default function Header() {
   const { data: session } = useSession();
+  const { items } = useCart();
 
   return (
     <header className="bg-gray-900 text-white shadow">
@@ -20,6 +22,14 @@ export default function Header() {
           <Link href="/">Головна</Link>
           <Link href="/menu">Послуги</Link>
           <Link href="/dashboard">Dashboard</Link>
+          <Link href="/cart" className="relative hover:text-gray-300">
+            🛒 Кошик
+            {items.length > 0 && (
+              <span className="ml-1 bg-red-600 text-white text-xs rounded-full px-2 py-0.5">
+                {items.length}
+              </span>
+            )}
+          </Link>
 
           {session ? (
             <div className="flex items-center gap-3 border-l border-gray-600 pl-4">

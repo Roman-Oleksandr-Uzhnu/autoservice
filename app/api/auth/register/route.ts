@@ -3,12 +3,26 @@ import bcrypt from "bcryptjs";
 import dbConnect from "@/lib/db";
 import User from "@/lib/models/User";
 import { registerSchema } from "@/lib/validations/user";
+import { stripHtml } from "@/lib/sanitize";
 
 export async function POST(request: Request) {
   try {
     await dbConnect();
 
-    const data = await request.json();
+    let data: unknown;
+
+    try {
+      data = await request.json();
+    } catch {
+      return NextResponse.json(
+        {
+          error: "Невалідний JSON у тілі запиту",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
 
     // Валідація через Zod
     const result = registerSchema.safeParse(data);
@@ -26,7 +40,8 @@ export async function POST(request: Request) {
       );
     }
 
-    const { name, email, password } = result.data;
+    const { email, password } = result.data;
+    const name = stripHtml(result.data.name);
 
     const existingUser = await User.findOne({ email });
 
@@ -64,8 +79,13 @@ export async function POST(request: Request) {
         status: 201,
       }
     );
-  } catch (error: any) {
-    if (error.code === 11000) {
+  } catch (error: unknown) {
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "code" in error &&
+      error.code === 11000
+    ) {
       return NextResponse.json(
         {
           error: "Користувач з таким email вже існує",

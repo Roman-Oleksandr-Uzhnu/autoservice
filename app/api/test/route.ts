@@ -1,11 +1,9 @@
 import { NextResponse } from "next/server";
-import mongoose from "mongoose";
+import dbConnect from "@/lib/db";
 
 export async function GET() {
   try {
-    const uri = process.env.MONGODB_URI!;
-
-    await mongoose.connect(uri);
+    await dbConnect();
 
     return NextResponse.json({
       success: true,
@@ -17,7 +15,7 @@ export async function GET() {
     return NextResponse.json(
       {
         success: false,
-        error: String(error),
+        error: error instanceof Error ? error.message : String(error),
       },
       {
         status: 500,

@@ -29,7 +29,16 @@ export async function POST(request: Request) {
   try {
     await dbConnect();
 
-    const data = await request.json();
+    let data: unknown;
+
+    try {
+      data = await request.json();
+    } catch {
+      return NextResponse.json(
+        { error: "Невалідний JSON у тілі запиту" },
+        { status: 400 }
+      );
+    }
 
     // Валідація через Zod
     const result = createServiceSchema.safeParse(data);

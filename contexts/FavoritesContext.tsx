@@ -3,9 +3,9 @@
 import { createContext, useContext, useState } from "react";
 
 type FavoritesContextType = {
-  favorites: number[];
-  toggleFavorite: (id: number) => void;
-  isFavorite: (id: number) => boolean;
+  favorites: string[];
+  toggleFavorite: (id: string) => void;
+  isFavorite: (id: string) => boolean;
 };
 
 const FavoritesContext = createContext<FavoritesContextType | undefined>(
@@ -17,9 +17,9 @@ export function FavoritesProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [favorites, setFavorites] = useState<number[]>([]);
+  const [favorites, setFavorites] = useState<string[]>([]);
 
-  function toggleFavorite(id: number) {
+  function toggleFavorite(id: string) {
     setFavorites((prev) =>
       prev.includes(id)
         ? prev.filter((item) => item !== id)
@@ -27,7 +27,7 @@ export function FavoritesProvider({
     );
   }
 
-  function isFavorite(id: number) {
+  function isFavorite(id: string) {
     return favorites.includes(id);
   }
 

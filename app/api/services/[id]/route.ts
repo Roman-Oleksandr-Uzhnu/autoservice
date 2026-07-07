@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/db";
 import Service from "@/lib/models/Service";
+import "@/lib/models/Order";
+import "@/lib/models/OrderItem";
 import mongoose from "mongoose";
 import { authorize } from "@/lib/authorize";
 import { updateServiceSchema } from "@/lib/validations/service";

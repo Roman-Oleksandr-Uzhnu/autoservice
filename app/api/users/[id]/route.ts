@@ -3,6 +3,7 @@ import dbConnect from "@/lib/db";
 import User from "@/lib/models/User";
 import { authorize } from "@/lib/authorize";
 import { updateRoleSchema } from "@/lib/validations/user";
+import mongoose from "mongoose";
 
 export async function PUT(
   request: Request,
@@ -15,6 +16,13 @@ export async function PUT(
 
   try {
     const { id } = await params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json(
+        { error: "Невірний ID" },
+        { status: 400 }
+      );
+    }
 
     const data = await request.json();
 

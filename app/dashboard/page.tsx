@@ -1,5 +1,8 @@
 import StatsCard from "@/components/StatsCard";
-import { getServiceStats } from "@/lib/helpers";
+import {
+  getServiceStats,
+  getOrderStats,
+} from "@/lib/helpers";
 
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -16,9 +19,12 @@ export default async function DashboardPage() {
     redirect("/auth/login");
   }
 
-  await new Promise((resolve) => setTimeout(resolve, 1000));
+  const isAdmin = session.user.role === "admin";
 
-  const stats = getServiceStats();
+  const [stats, orderStats] = await Promise.all([
+    getServiceStats(),
+    isAdmin ? getOrderStats() : Promise.resolve(null),
+  ]);
 
   return (
     <div>
@@ -71,6 +77,34 @@ export default async function DashboardPage() {
           </p>
         </div>
       </div>
+
+      {isAdmin && orderStats && (
+        <>
+          <h2 className="text-2xl font-bold mt-10 mb-6">
+            Статистика замовлень
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <StatsCard
+              title="Всього замовлень"
+              value={orderStats.total}
+              color="red"
+            />
+
+            <StatsCard
+              title="Очікують"
+              value={orderStats.pending}
+              color="blue"
+            />
+
+            <StatsCard
+              title="Виконано"
+              value={orderStats.completed}
+              color="green"
+            />
+          </div>
+        </>
+      )}
     </div>
   );
 }

@@ -1,5 +1,3 @@
-
-
 "use client";
 
 import { useState } from "react";
@@ -11,6 +9,7 @@ export default function LoginPage() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -37,33 +36,35 @@ export default function LoginPage() {
 
   return (
     <div className="max-w-md mx-auto py-20">
-      <h1 className="text-3xl font-bold mb-8">Вхід</h1>
+      <h1 className="text-3xl font-bold mb-8">
+        Вхід
+      </h1>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-4"
+      >
         <input
           type="email"
           placeholder="Email"
-          className="w-full border p-3 rounded"
+          className="w-full border rounded p-3"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          required
         />
 
         <input
           type="password"
           placeholder="Пароль"
-          className="w-full border p-3 rounded"
+          className="w-full border rounded p-3"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          required
         />
 
         <button
-          type="submit"
-          disabled={loading}
           className="w-full bg-red-600 text-white py-3 rounded"
+          disabled={loading}
         >
-          {loading ? "Зачекайте..." : "Увійти"}
+          {loading ? "Вхід..." : "Увійти"}
         </button>
       </form>
     </div>

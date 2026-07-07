@@ -1,15 +1,43 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import ServiceCard from "./ServiceCard";
-import { services, getCategories } from "@/lib/services";
 
-const categories = getCategories();
+type Service = {
+  _id: string;
+  name: string;
+  description: string;
+  price: number;
+  icon: string;
+  category: string;
+  available: boolean;
+};
 
 export default function MenuFilter() {
+  const [services, setServices] = useState<Service[]>([]);
+  const [error, setError] = useState("");
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("Всі");
   const [showAvailableOnly, setShowAvailableOnly] = useState(false);
+
+  useEffect(() => {
+    async function loadServices() {
+      try {
+        const response = await fetch("/api/services");
+        if (!response.ok) throw new Error();
+        setServices(await response.json());
+      } catch {
+        setError("Не вдалося завантажити послуги");
+      }
+    }
+
+    void loadServices();
+  }, []);
+
+  const categories = useMemo(
+    () => ["Всі", ...new Set(services.map((service) => service.category))],
+    [services]
+  );
 
   const filteredItems = services.filter((service) => {
     const matchesSearch = service.name
@@ -32,6 +60,11 @@ export default function MenuFilter() {
 
   return (
     <div>
+      {error && (
+        <p className="mb-6 rounded-lg bg-red-100 p-4 text-red-700">
+          {error}
+        </p>
+      )}
       {/* Пошук */}
       <input
         type="text"
@@ -81,8 +114,9 @@ export default function MenuFilter() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredItems.map((service) => (
             <ServiceCard
-              key={service.id}
+              key={service._id}
               {...service}
+              id={service._id}
             />
           ))}
         </div>

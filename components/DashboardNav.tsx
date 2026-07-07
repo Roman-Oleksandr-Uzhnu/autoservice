@@ -13,6 +13,10 @@ const links = [
     label: "Послуги",
   },
   {
+    href: "/dashboard/orders",
+    label: "Замовлення",
+  },
+  {
     href: "/dashboard/clients",
     label: "Клієнти",
   },
