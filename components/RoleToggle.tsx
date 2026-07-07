@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 type Props = {
   userId: string;
@@ -21,9 +22,15 @@ export default function RoleToggle({
     return <span className="text-xs text-gray-400">(ви)</span>;
   }
 
-  const newRole = currentRole === "admin" ? "user" : "admin";
+  const newRole =
+    currentRole === "admin"
+      ? "user"
+      : "admin";
 
-  const handleToggle = async () => {
+  async function handleToggle() {
+    // ТЕСТ
+    toast.success("Натиснув кнопку");
+
     setLoading(true);
 
     try {
@@ -39,17 +46,23 @@ export default function RoleToggle({
 
       if (!response.ok) {
         const data = await response.json();
-        alert(data.error || "Помилка");
+
+        toast.error(
+          data.error || "Помилка зміни ролі"
+        );
+
         return;
       }
 
+      toast.success(`Роль змінено: ${newRole}`);
+
       router.refresh();
     } catch {
-      alert("Помилка з'єднання");
+      toast.error("Помилка з'єднання");
     } finally {
       setLoading(false);
     }
-  };
+  }
 
   return (
     <button

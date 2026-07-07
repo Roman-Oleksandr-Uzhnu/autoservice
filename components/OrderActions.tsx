@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { toast } from "sonner";
 
 type Props = {
   order: any;
@@ -17,8 +18,8 @@ export default function OrderActions({
 }: Props) {
   const router = useRouter();
 
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [loading, setLoading] =
+    useState(false);
 
   const isAdmin = role === "admin";
 
@@ -27,34 +28,45 @@ export default function OrderActions({
     currentUserId;
 
   const canCancel =
-    isOwner && order.status === "pending";
+    isOwner &&
+    order.status === "pending";
 
   async function handleDelete() {
-    if (!confirm("Видалити замовлення?")) return;
+    if (!confirm("Видалити замовлення?"))
+      return;
 
     setLoading(true);
 
-    const res = await fetch(
-      `/api/orders/${order._id}`,
-      {
-        method: "DELETE",
-      }
-    );
-
-    setLoading(false);
-
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-
-      setError(
-        data.error || "Помилка видалення"
+    try {
+      const res = await fetch(
+        `/api/orders/${order._id}`,
+        {
+          method: "DELETE",
+        }
       );
 
-      return;
-    }
+      if (!res.ok) {
+        const data = await res
+          .json()
+          .catch(() => ({}));
 
-    router.push("/dashboard/orders");
-    router.refresh();
+        toast.error(
+          data.error ||
+            "Помилка видалення"
+        );
+
+        return;
+      }
+
+      toast.success(
+        "Замовлення видалено"
+      );
+
+      router.push("/dashboard/orders");
+      router.refresh();
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function handleCancel() {
@@ -63,43 +75,45 @@ export default function OrderActions({
 
     setLoading(true);
 
-    const res = await fetch(
-      `/api/orders/${order._id}`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type":
-            "application/json",
-        },
-        body: JSON.stringify({
-          status: "cancelled",
-        }),
-      }
-    );
-
-    setLoading(false);
-
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-
-      setError(
-        data.error || "Помилка"
+    try {
+      const res = await fetch(
+        `/api/orders/${order._id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            status: "cancelled",
+          }),
+        }
       );
 
-      return;
-    }
+      if (!res.ok) {
+        const data = await res
+          .json()
+          .catch(() => ({}));
 
-    router.refresh();
+        toast.error(
+          data.error || "Помилка"
+        );
+
+        return;
+      }
+
+      toast.success(
+        "Замовлення скасовано"
+      );
+
+      router.refresh();
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
     <div className="mt-6">
-      {error && (
-        <div className="mb-3 text-red-600">
-          {error}
-        </div>
-      )}
-
       <div className="flex gap-3">
         {isAdmin && (
           <>
@@ -113,9 +127,11 @@ export default function OrderActions({
             <button
               onClick={handleDelete}
               disabled={loading}
-              className="bg-red-600 text-white px-4 py-2 rounded"
+              className="bg-red-600 text-white px-4 py-2 rounded disabled:opacity-50"
             >
-              Видалити
+              {loading
+                ? "..."
+                : "Видалити"}
             </button>
           </>
         )}
@@ -124,9 +140,11 @@ export default function OrderActions({
           <button
             onClick={handleCancel}
             disabled={loading}
-            className="bg-red-600 text-white px-4 py-2 rounded"
+            className="bg-red-600 text-white px-4 py-2 rounded disabled:opacity-50"
           >
-            Скасувати
+            {loading
+              ? "..."
+              : "Скасувати"}
           </button>
         )}
       </div>

@@ -1,48 +1,88 @@
 "use client";
 
-import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+
+import { registerFormSchema } from "@/lib/validations/auth";
+import FormField from "@/components/forms/FormField";
+
+type RegisterData = {
+  name: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+};
 
 export default function RegisterPage() {
   const router = useRouter();
 
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    password: "",
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors, isSubmitting },
+  } = useForm<RegisterData>({
+    resolver: zodResolver(registerFormSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
   });
 
-  const [loading, setLoading] = useState(false);
-
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-
-    setLoading(true);
-
+  async function onSubmit(data: RegisterData) {
     try {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          name: data.name,
+          email: data.email,
+          password: data.password,
+        }),
       });
 
-      const data = await res.json();
+      const body = await res.json().catch(() => ({}));
 
-      if (!res.ok) {
-        alert(data.error || data.errors?.join(", ") || "Помилка");
+      if (res.status === 409) {
+        setError("email", {
+          type: "server",
+          message: body.error || "Email вже існує",
+        });
+
+        toast.error("Email вже зайнятий");
         return;
       }
 
-      alert("Реєстрація успішна!");
+      if (!res.ok) {
+        toast.error(body.error || "Помилка реєстрації");
+        return;
+      }
 
-      router.push("/auth/login");
-    } catch (error) {
-      console.error(error);
-      alert("Помилка з'єднання із сервером");
-    } finally {
-      setLoading(false);
+      const result = await signIn("credentials", {
+        email: data.email,
+        password: data.password,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        toast.success("Реєстрація успішна");
+        router.push("/auth/login");
+        return;
+      }
+
+      toast.success("Реєстрація успішна");
+
+      router.push("/dashboard");
+      router.refresh();
+    } catch {
+      toast.error("Помилка з'єднання");
     }
   }
 
@@ -52,49 +92,62 @@ export default function RegisterPage() {
         Реєстрація
       </h1>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <input
-          type="text"
-          name="name"
-          required
-          className="w-full border p-3 rounded"
-          placeholder="Ім'я"
-          value={form.name}
-          onChange={(e) =>
-            setForm({ ...form, name: e.target.value })
-          }
-        />
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="space-y-4"
+      >
+        <FormField
+          label="Ім'я"
+          error={errors.name?.message}
+        >
+          <input
+            type="text"
+            className="w-full border p-3 rounded"
+            {...register("name")}
+          />
+        </FormField>
 
-        <input
-          type="email"
-          name="email"
-          required
-          className="w-full border p-3 rounded"
-          placeholder="Email"
-          value={form.email}
-          onChange={(e) =>
-            setForm({ ...form, email: e.target.value })
-          }
-        />
+        <FormField
+          label="Email"
+          error={errors.email?.message}
+        >
+          <input
+            type="email"
+            className="w-full border p-3 rounded"
+            {...register("email")}
+          />
+        </FormField>
 
-        <input
-          type="password"
-          name="password"
-          required
-          className="w-full border p-3 rounded"
-          placeholder="Пароль"
-          value={form.password}
-          onChange={(e) =>
-            setForm({ ...form, password: e.target.value })
-          }
-        />
+        <FormField
+          label="Пароль"
+          error={errors.password?.message}
+        >
+          <input
+            type="password"
+            className="w-full border p-3 rounded"
+            {...register("password")}
+          />
+        </FormField>
+
+        <FormField
+          label="Підтвердження пароля"
+          error={errors.confirmPassword?.message}
+        >
+          <input
+            type="password"
+            className="w-full border p-3 rounded"
+            {...register("confirmPassword")}
+          />
+        </FormField>
 
         <button
           type="submit"
-          disabled={loading}
-          className="w-full bg-red-600 text-white py-3 rounded"
+          disabled={isSubmitting}
+          className="w-full bg-red-600 text-white py-3 rounded disabled:opacity-50"
         >
-          {loading ? "Зачекайте..." : "Зареєструватися"}
+          {isSubmitting
+            ? "Реєстрація..."
+            : "Зареєструватися"}
         </button>
       </form>
     </div>
